@@ -10,15 +10,17 @@ base_packages = [
         "tqdm>=4.62.3",
         "spacy>=3.2.3",
         "pyarrow>=6.0.1",
-        "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.2.0/en_core_web_sm-3.2.0.tar.gz"
+        "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.2.0/en_core_web_sm-3.2.0.tar.gz",
+        "keybert",
+        "yake"
 ]
 
 setup(
-    name='text-analysis-models',
+    name='text_analysis_models',
     packages=find_packages(exclude=["notebooks", "docs"]),
     version='0.1.0',    
     description='A text semantics api for text keyword extraction and insights, sentiment analysis and topic modeling',
-    url='https://github.com/AbhinavJhanwar/text-analysis-models.git',
+    url='https://github.com/AbhinavJhanwar/text_analysis_models.git',
     author='Abhinav Jhanwar',
     author_email='abhij.1994@gmail.com',
     install_requires=base_packages,

@@ -1,18 +1,12 @@
-# %%
-import pandas as pd
-import gzip
-import json
-from tqdm import tqdm
-tqdm.pandas()
-
-from nltk import ngrams
-from nltk.corpus import stopwords
-stops = set(stopwords.words('english'))
-
 import re
 import string
+import gzip
+import pandas as pd
+import json
+from nltk.corpus import stopwords
+stops = set(stopwords.words('english'))
+from nltk import ngrams
 
-#pip install Keybert
 from sentence_transformers import SentenceTransformer, util
 kw_model = SentenceTransformer('all-MiniLM-L6-v2')
 
@@ -55,20 +49,6 @@ category = 'luxury_beauty'
 # load data by category
 reviews = load_data(category)
 
-# %%
-def generate_sentiment(reviews:pd.core.frame.DataFrame, category:str='gift_cards')->pd.core.frame.DataFrame:
-  # sentiment analysis on pretrained weights on gift cards
-  sentiment_pipeline = pipeline(model="nlptown/bert-base-multilingual-uncased-sentiment")
-  reviews['sentiment'] = reviews['reviewText'].progress_apply(lambda x: sentiment_pipeline(str(x)[:1000]))
-  reviews['sentiment'] = reviews['sentiment'].apply(lambda x: int(x[0]['label'].split(' ')[0]))
-  
-  reviews.to_pickle(f'data/reviews_{category}.pkl')
-
-  return reviews
-
-# generate review sentiment
-reviews = generate_sentiment(reviews, category)
-    
 # %%
 def clean_text(text:str)->str:
   # lower encoding the text

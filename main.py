@@ -1,21 +1,13 @@
-## Installation
-```
-pip install .
-```
 
-## Generate Keywords
-Choose from one of the three methods- simple, candidate, guided
-```
+from keybert import KeyBERT
+from text_analysis_models.generate_keywords import generate_keywords
 import nltk
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 stops = set(stopwords.words('english'))
-
-from keybert import KeyBERT
-from text_analysis_models.generate_keywords import generate_keywords
+      
 
 kw_model = KeyBERT('all-distilroberta-v1')
-
 doc = """
          Family. The fact is, there is no foundation, no secure ground, 
          upon which people may stand today if it isn't the family. It's 
@@ -39,10 +31,11 @@ doc = """
 keywords = generate_keywords(doc.lower(), kw_model, keyphrase_ngram_range=(1, 3), stop_words=stops, method='simple', highlight=True) 
 print("simple method", keywords, sep='\n')
 
-```
+keywords = generate_keywords(doc.lower(), kw_model, keyphrase_ngram_range=(1, 3), stop_words=stops, method='candidate', highlight=True) 
+print("candidate method", keywords, sep='\n')
 
-## References-
-* Quickstart- https://maartengr.github.io/KeyBERT/guides/quickstart.html
-* Pretrained Models- https://www.sbert.net/docs/pretrained_models.html
-* https://huggingface.co/models?pipeline_tag=text-classification&sort=downloads&search=sentiment
-* 
+# Define seeded terms
+seed_keywords = ["family", "knowledge", "children"]
+keywords = generate_keywords(doc.lower(), kw_model, keyphrase_ngram_range=(1, 3), stop_words=stops, method='guided', seed_keywords=seed_keywords, highlight=True) 
+print("guided method", keywords, sep='\n')
+

@@ -1,13 +1,7 @@
-
+# %%
 from keybert import KeyBERT
 from text_analysis_models.generate_keywords import generate_keywords
-import nltk
-nltk.download('stopwords')
-from nltk.corpus import stopwords
-stops = set(stopwords.words('english'))
-      
 
-kw_model = KeyBERT('all-distilroberta-v1')
 doc = """
          Family. The fact is, there is no foundation, no secure ground, 
          upon which people may stand today if it isn't the family. It's 
@@ -28,14 +22,59 @@ doc = """
          Nothing else will give you that. Not money. Not fame. Not work.
       """
 
-keywords = generate_keywords(doc.lower(), kw_model, keyphrase_ngram_range=(1, 3), stop_words=stops, method='simple', highlight=True) 
+# %%
+######################################################
+############## generate keywords #####################
+######################################################
+kw_model = KeyBERT('all-distilroberta-v1')
+
+################# method 1
+keywords = generate_keywords(doc.lower(), kw_model, keyphrase_ngram_range=(1, 3), stop_words='nltk', method='simple', highlight=True) 
 print("simple method", keywords, sep='\n')
 
-keywords = generate_keywords(doc.lower(), kw_model, keyphrase_ngram_range=(1, 3), stop_words=stops, method='candidate', highlight=True) 
+################# method 2
+keywords = generate_keywords(doc.lower(), kw_model, keyphrase_ngram_range=(1, 3), stop_words='nltk', method='candidate', highlight=True) 
 print("candidate method", keywords, sep='\n')
 
+################# method 3
 # Define seeded terms
 seed_keywords = ["family", "knowledge", "children"]
-keywords = generate_keywords(doc.lower(), kw_model, keyphrase_ngram_range=(1, 3), stop_words=stops, method='guided', seed_keywords=seed_keywords, highlight=True) 
+keywords = generate_keywords(doc.lower(), kw_model, keyphrase_ngram_range=(1, 3), stop_words='nltk', method='guided', seed_keywords=seed_keywords, highlight=True) 
 print("guided method", keywords, sep='\n')
+
+################ method 4
+# generate token and score
+from sentence_transformers import SentenceTransformer
+kw_model = SentenceTransformer('all-distilroberta-v1')#('all-MiniLM-L6-v2')
+token_score_pairs = generate_keywords(doc.lower(), kw_model, method='embedding')
+print("embedding method", token_score_pairs, sep='\n')
+
+# %%
+##################################################
+############## plot keywords #####################
+##################################################
+from text_analysis_models.plot_keywords import plot_data
+from sentence_transformers import SentenceTransformer
+import pandas as pd
+
+# generate token and score
+kw_model = SentenceTransformer('all-distilroberta-v1')#('all-MiniLM-L6-v2')
+token_score_pairs = generate_keywords(doc.lower(), kw_model, method='embedding')
+df = pd.DataFrame(token_score_pairs, columns=['keyword', 'weights'])
+
+# plot data
+plot_data(data=df.copy(), 
+    keyword_column='keyword', 
+    weights_column='weights',
+    plot_type='phrase', 
+    x_axis='count', 
+    y_axis='importance', 
+    bubble_size='count', 
+    title_text='Keyword Importance', 
+    save_file='bubble_plot', 
+    sort_data='importance', min_size=0.005, 
+    number_of_keywords_to_plot=20)
+
+# next steps-
+# 1. clean text like stemming and lemmatization
 

@@ -1,5 +1,5 @@
-import re
-import string
+# %%
+from generate_keywords import clean_text
 import gzip
 import pandas as pd
 import json
@@ -50,23 +50,6 @@ category = 'luxury_beauty'
 reviews = load_data(category)
 
 # %%
-def clean_text(text:str)->str:
-  # lower encoding the text
-  text = text.lower()
-  # remove punctuations
-  text = re.sub('['+string.punctuation+']+', '', text)     
-  # Remove double whitespace                       
-  text = re.sub('\s+\s+', ' ', text)      
-  # Remove \ slash
-  text = re.sub(r'\\', ' ', text)         
-  # Remove / slash
-  text = re.sub(r'\/', ' ', text)   
-  
-  return text      
-
-# clean review text
-reviews['clean_reviewText'] = reviews['reviewText'].apply(clean_text)
-
 def generateTopic(text:str, method:str='method1')->str:
     
   # remove stop words
@@ -85,7 +68,7 @@ def generateTopic(text:str, method:str='method1')->str:
     doc_emb = kw_model.encode(text)
     token_emb = kw_model.encode(tokens)
 
-    # Compute dot score between tokens and document embeddings
+    # Compute cosine similarity score between tokens and document embeddings
     scores = util.cos_sim(doc_emb, token_emb)[0].cpu().tolist()
 
     # Combine tokens & scores
@@ -106,6 +89,15 @@ def generateTopic(text:str, method:str='method1')->str:
 
   return topic
   
+
+# %%
+# read reviews
+reviews = pd.read_pickle('/home/abhinav_jhanwar_valuelabs_com/text_analysis_models/data/reviews_gift_cards.pkl')
+
+# clean review text
+reviews['clean_reviewText'] = reviews['reviewText'].apply(clean_text)
+
+# %%
 # generate topics
 reviews['topic'] = reviews['clean_reviewText'].progress_apply(generateTopic, method='method1')
 

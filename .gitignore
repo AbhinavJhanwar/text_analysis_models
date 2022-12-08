@@ -1,2 +1,3 @@
 text_analysis_models.egg-info/
 build/
+text_analysis_models/__pycache__/

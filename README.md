@@ -88,6 +88,37 @@ plot_data(data=df.copy(),
 
 ```
 
+## Topic Modeling
+```
+from text_analysis_models.generate_topic import generateTopic
+doc = """
+      The Table looks better than the pics. 
+      It is very Sturdy. The seller contacted me to ask 
+      my colour preferences for the stool tapestry and
+      what polish I want for my table. He did a fabulous 
+      job and my table looks just the way I wanted it to! 
+      Total value for money. 5 stars to the product, 
+      seller and Amazon
+      """ 
+topic = generateTopic(doc)
+```
+
+## Sentiment Generation
+```
+from text_analysis_models.sentiment_analysis import generate_sentiment
+doc = """
+      The Table looks better than the pics. 
+      It is very Sturdy. The seller contacted me to ask 
+      my colour preferences for the stool tapestry and
+      what polish I want for my table. He did a fabulous 
+      job and my table looks just the way I wanted it to! 
+      Total value for money. 5 stars to the product, 
+      seller and Amazon
+      """
+
+sentiment = generate_sentiment(doc)
+```
+
 ## References-
 * Quickstart- https://maartengr.github.io/KeyBERT/guides/quickstart.html
 * Pretrained Models- https://www.sbert.net/docs/pretrained_models.html

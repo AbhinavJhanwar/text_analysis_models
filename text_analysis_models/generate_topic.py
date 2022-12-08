@@ -1,5 +1,5 @@
 # %%
-from generate_keywords import clean_text
+from text_analysis_models.generate_keywords import clean_text
 import gzip
 import pandas as pd
 import json
@@ -8,7 +8,7 @@ stops = set(stopwords.words('english'))
 from nltk import ngrams
 
 from sentence_transformers import SentenceTransformer, util
-kw_model = SentenceTransformer('all-MiniLM-L6-v2')
+kw_model = SentenceTransformer('all-distilroberta-v1')#('all-MiniLM-L6-v2')
 
 
 def parse(path):
@@ -45,13 +45,17 @@ def load_data(category:str='gift_cards')->pd.core.frame.DataFrame:
 
   return reviews
 
-category = 'luxury_beauty'
+#category = 'luxury_beauty'
 # load data by category
-reviews = load_data(category)
+#reviews = load_data(category)
 
 # %%
 def generateTopic(text:str, method:str='method1')->str:
     
+  text = text.lower()
+
+  text = clean_text(text)
+
   # remove stop words
   text1 = ' '.join([token for token in text.split() if token not in stops])
 
@@ -78,8 +82,8 @@ def generateTopic(text:str, method:str='method1')->str:
     token_score_pairs = sorted(token_score_pairs, key=lambda x: x[1], reverse=True)
 
     # Output passages & scores
-    '''for token, score in token_score_pairs:
-        print(score, token)'''
+    for token, score in token_score_pairs:
+        print(score, token)
 
     # generate topic using top 5 keywords
     topic = '-'.join([item[0] for item in token_score_pairs[:5]])
@@ -92,14 +96,14 @@ def generateTopic(text:str, method:str='method1')->str:
 
 # %%
 # read reviews
-reviews = pd.read_pickle('/home/abhinav_jhanwar_valuelabs_com/text_analysis_models/data/reviews_gift_cards.pkl')
+#reviews = pd.read_pickle('/home/abhinav_jhanwar_valuelabs_com/text_analysis_models/data/reviews_gift_cards.pkl')
 
 # clean review text
-reviews['clean_reviewText'] = reviews['reviewText'].apply(clean_text)
+#reviews['clean_reviewText'] = reviews['reviewText'].apply(clean_text)
 
 # %%
 # generate topics
-reviews['topic'] = reviews['clean_reviewText'].progress_apply(generateTopic, method='method1')
+#reviews['topic'] = reviews['clean_reviewText'].progress_apply(generateTopic, method='method1')
 
 # %%
 # method 2

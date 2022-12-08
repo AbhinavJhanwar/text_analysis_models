@@ -57,7 +57,7 @@ from text_analysis_models.plot_keywords import plot_data
 from sentence_transformers import SentenceTransformer
 import pandas as pd
 
-# generate token and score
+'''# generate token and score
 kw_model = SentenceTransformer('all-distilroberta-v1')#('all-MiniLM-L6-v2')
 token_score_pairs = generate_keywords(doc.lower(), kw_model, method='embedding')
 df = pd.DataFrame(token_score_pairs, columns=['keyword', 'weights'])
@@ -73,7 +73,79 @@ plot_data(data=df.copy(),
     title_text='Keyword Importance', 
     save_file='bubble_plot', 
     sort_data='importance', min_size=0.005, 
+    number_of_keywords_to_plot=20)'''
+
+############# plot keywords for multiple docs
+from text_analysis_models.generate_keywords import clean_text, generate_keywords
+from tqdm import tqdm
+kw_model = SentenceTransformer('all-distilroberta-v1')#('all-MiniLM-L6-v2')
+
+# read reviews
+reviews = pd.read_pickle('data/reviews_gift_cards.pkl')
+# clean review text
+
+reviews['clean_reviewText'] = reviews['reviewText'].apply(clean_text)
+
+# generate token and score
+df = pd.DataFrame()
+for i, doc in tqdm(enumerate(reviews.clean_reviewText)):
+      token_score_pairs = generate_keywords(doc.lower(), kw_model, method='embedding')
+      if type(token_score_pairs)!=str:
+            sentiment = reviews['sentiment'].iloc[i]
+            temp = pd.DataFrame(token_score_pairs, columns=['keyword', 'weights'])
+            temp['sentiment'] = sentiment
+            df = pd.concat([df, temp])
+
+# %%
+# plot data
+plot_data(data=df.copy(), 
+    keyword_column='keyword', 
+    weights_column='weights',
+    plot_type='phrase', 
+    x_axis='count', 
+    y_axis='importance', 
+    bubble_size='sentiment', 
+    title_text='Keyword Importance', 
+    save_file='bubble_plot_reviews', 
+    sort_data='count', 
+    min_size=0.005, 
     number_of_keywords_to_plot=20)
+
+
+# %%
+#########################################################
+################## sentiment generation #################
+#########################################################
+from text_analysis_models.sentiment_analysis import generate_sentiment
+doc = """
+      The Table looks better than the pics. 
+      It is very Sturdy. The seller contacted me to ask 
+      my colour preferences for the stool tapestry and
+      what polish I want for my table. He did a fabulous 
+      job and my table looks just the way I wanted it to! 
+      Total value for money. 5 stars to the product, 
+      seller and Amazon
+      """
+sentiment = generate_sentiment(doc)
+print(sentiment)
+
+
+# %%
+#########################################################
+################## topic modeling #######################
+#########################################################
+from text_analysis_models.generate_topic import generateTopic
+doc = """
+      The Table looks better than the pics. 
+      It is very Sturdy. The seller contacted me to ask 
+      my colour preferences for the stool tapestry and
+      what polish I want for my table. He did a fabulous 
+      job and my table looks just the way I wanted it to! 
+      Total value for money. 5 stars to the product, 
+      seller and Amazon
+      """ 
+topic = generateTopic(doc)
+print(topic)
 
 # next steps-
 # 1. clean text like stemming and lemmatization

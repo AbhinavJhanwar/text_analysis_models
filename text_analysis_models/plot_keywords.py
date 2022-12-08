@@ -88,12 +88,13 @@ def plot_data(data: pd.core.frame.DataFrame,
         # calculate rank of phrases in similar way
         data[bubble_size] = data.groupby([keyword_column])[bubble_size].transform('mean')
     # if for some reason x_min and x_max are same then modify the method
+    # normalize the bubble size variable
     try:
         x_min= min(data[bubble_size])
         x_max= max(data[bubble_size])
         data[bubble_size] = data[bubble_size].apply(lambda x: (x-x_min)/(x_max-x_min)).replace(0, min_size)
     except:
-        data[bubble_size] = data[bubble_size].replace(x_min, 1)
+        data[bubble_size] = data[bubble_size].replace(x_min, 0)
     
     # remove duplicates
     data.drop_duplicates([keyword_column, 'importance', 'count'], inplace=True)

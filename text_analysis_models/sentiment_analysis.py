@@ -2,18 +2,8 @@
 import pandas as pd
 import gzip
 import json
-from tqdm import tqdm
-tqdm.pandas()
 
-from nltk.corpus import stopwords
-stops = set(stopwords.words('english'))
-
-
-
-#pip install Keybert
-from sentence_transformers import SentenceTransformer, util
-kw_model = SentenceTransformer('all-MiniLM-L6-v2')
-
+from transformers import pipeline
 
 def parse(path):
   g = gzip.open(path, 'rb')
@@ -49,21 +39,39 @@ def load_data(category:str='gift_cards')->pd.core.frame.DataFrame:
 
   return reviews
 
-category = 'luxury_beauty'
+#category = 'luxury_beauty'
 # load data by category
-reviews = load_data(category)
+#reviews = load_data(category)
 
 # %%
-def generate_sentiment(reviews:pd.core.frame.DataFrame, category:str='gift_cards')->pd.core.frame.DataFrame:
-  # sentiment analysis on pretrained weights on gift cards
+def generate_sentiment(doc:str)->dict:
+  """generates star rating from 1 to 5, 1 being lowest
+    and 5 being highest, along with confidence of model.
+
+  Args:
+      doc (str): input string to generate sentiment for.
+
+  Returns:
+      dict: dictionary with rating and model confidence score.
+  """
+
+  # define tokenizer+classifier pipeline
   sentiment_pipeline = pipeline(model="nlptown/bert-base-multilingual-uncased-sentiment")
-  reviews['sentiment'] = reviews['reviewText'].progress_apply(lambda x: sentiment_pipeline(str(x)[:1000]))
-  reviews['sentiment'] = reviews['sentiment'].apply(lambda x: int(x[0]['label'].split(' ')[0]))
+  doc= doc[:1400]
   
-  reviews.to_pickle(f'data/reviews_{category}.pkl')
+  review_generated=False
+  while not review_generated:
+      try:
+          # run sentiment prediction model
+          sentiment_op = sentiment_pipeline(doc)[0]
+          review_generated=True
+      except:
+          doc = doc[:len(doc)-100]
 
-  return reviews
+  # separate sentiment label and score
+  sentiment_label = int(sentiment_op['label'].split()[0])
+  sentiment_score = sentiment_op['score']
 
-# generate review sentiment
-reviews = generate_sentiment(reviews, category)
- 
+  return {'Star Rating': sentiment_label,
+            'Confidence Score': sentiment_score}
+

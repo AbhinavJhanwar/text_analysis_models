@@ -152,4 +152,5 @@ print(topic)
 
 # next steps-
 # 1. clean text like stemming and lemmatization
+# 2. topic modeling with k-means and dbscan
 

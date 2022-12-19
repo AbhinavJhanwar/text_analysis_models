@@ -100,8 +100,11 @@ doc = """
       Total value for money. 5 stars to the product, 
       seller and Amazon
       """ 
-topic = generateTopic(doc)
+topic = generateTopic(doc, method='method1')
 ```
+Here 'method1' works well enough but the limitation is that keywords like 'very good product' and 
+'good product' are treated separately while they are kind of synonyms so to implement that we have 
+other methods that use clustering methods to group such keywords into one group and then generate topic.
 
 ## Sentiment Generation
 ```

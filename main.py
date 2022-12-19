@@ -144,7 +144,10 @@ doc = """
       Total value for money. 5 stars to the product, 
       seller and Amazon
       """ 
-topic = generateTopic(doc)
+topic = generateTopic(doc, method='method1')
+print(topic)
+
+topic = generateTopic(doc, method='method2')
 print(topic)
 
 # next steps-

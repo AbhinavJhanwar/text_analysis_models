@@ -7,6 +7,12 @@ from nltk.corpus import stopwords
 stops = set(stopwords.words('english'))
 from nltk import ngrams
 
+from sklearn.cluster import KMeans
+from sklearn.metrics import silhouette_score
+
+import hdbscan
+import umap
+
 from sentence_transformers import SentenceTransformer, util
 kw_model = SentenceTransformer('all-distilroberta-v1')#('all-MiniLM-L6-v2')
 
@@ -51,6 +57,21 @@ def load_data(category:str='gift_cards')->pd.core.frame.DataFrame:
 
 # %%
 def generateTopic(text:str, method:str='method1')->str:
+  """_summary_
+
+  Args:
+      text (str): _description_
+      method (str, optional): _description_. Defaults to 'method1'.
+
+      method1: simple topic modeling based on the keyword score from
+              BERT model and cosine similarity between token and doc
+      method2: on top of method 1 a clustering technique hdbscan is 
+              applied to cluster similar tokens and include only one
+              token from each cluster
+
+  Returns:
+      str: _description_
+  """
     
   text = text.lower()
 
@@ -75,37 +96,60 @@ def generateTopic(text:str, method:str='method1')->str:
     # Compute cosine similarity score between tokens and document embeddings
     scores = util.cos_sim(doc_emb, token_emb)[0].cpu().tolist()
 
-    # Combine tokens & scores
-    token_score_pairs = list(zip(tokens, scores))
+    if method=='method1':
+      # Combine tokens & scores
+      token_score_pairs = list(zip(tokens, scores))
 
-    # Sort by decreasing score
-    token_score_pairs = sorted(token_score_pairs, key=lambda x: x[1], reverse=True)
+      # Sort by decreasing score
+      token_score_pairs = sorted(token_score_pairs, key=lambda x: x[1], reverse=True)
 
-    # Output passages & scores
-    for token, score in token_score_pairs:
-        print(score, token)
+      # Output passages & scores
+      # for token, score in token_score_pairs:
+      #     print(score, token)
 
-    # generate topic using top 5 keywords
-    topic = '-'.join([item[0] for item in token_score_pairs[:5]])
+      # generate topic using top 5 keywords
+      topic = '-'.join([item[0] for item in token_score_pairs[:5]])
+    
+    elif method=='method2':
+      df_embedding = pd.DataFrame(token_emb)
+      df_embedding['tokens'] = tokens
+      train_data = df_embedding.drop_duplicates()
+
+      reducer = umap.UMAP(random_state=42, n_components=2)
+      embedding = reducer.fit_transform(df_embedding[list(range(0, 768))])
+
+      # Building the clustering model
+      clustering_model = hdbscan.HDBSCAN(min_cluster_size=2, gen_min_span_tree=True)
+
+      # Training the model and Storing the predicted cluster labels 
+      clusterer = clustering_model.fit(embedding)
+      train_data['tokens'] = tokens
+      train_data['cluster']  = clusterer.labels_
+      train_data['scores'] = scores
+
+      # sort as per scores
+      train_data = train_data.sort_values('scores', ascending=False)[['tokens', 'scores', 'cluster']]
+      
+      # separate cluster -1
+      temp = train_data[train_data.cluster==-1]
+      train_data = train_data[train_data.cluster!=-1]
+
+      # keep only one value from each cluster
+      train_data = train_data.drop_duplicates(['cluster'])
+      
+      # concat cluster -1 and sort as per scores 
+      train_data = pd.concat([train_data, temp]).sort_values('scores', ascending=False)
+      
+      # for cluster in train_data.cluster.unique():
+      #   print(cluster, train_data[train_data.cluster==cluster]['tokens'].unique())
+
+      # generate topic using top 5 keywords
+      topic = '-'.join(train_data.tokens.iloc[:5].tolist())
+
+    return topic
 
   else:
-    topic=None
-
-  return topic
-  
-
-# %%
-# read reviews
-#reviews = pd.read_pickle('/home/abhinav_jhanwar_valuelabs_com/text_analysis_models/data/reviews_gift_cards.pkl')
-
-# clean review text
-#reviews['clean_reviewText'] = reviews['reviewText'].apply(clean_text)
-
-# %%
-# generate topics
-#reviews['topic'] = reviews['clean_reviewText'].progress_apply(generateTopic, method='method1')
-
-# %%
+    return None
 # method 2
 # generate embedding for all keywords
 # create k-means/dbscan/hdbscan model

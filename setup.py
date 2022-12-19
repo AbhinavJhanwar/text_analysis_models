@@ -12,7 +12,9 @@ base_packages = [
         "pyarrow>=6.0.1",
         "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.2.0/en_core_web_sm-3.2.0.tar.gz",
         "keybert",
-        "yake"
+        "yake",
+        "hdbscan",
+        "umap-learn"
 ]
 
 setup(

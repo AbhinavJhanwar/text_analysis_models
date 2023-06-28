@@ -6,7 +6,6 @@ base_packages = [
         "pandas>=1.3.5",
         "nltk>=3.6.7",
         "plotly>=5.5.0",
-        "bs4",
         "tqdm>=4.62.3",
         "spacy>=3.2.3",
         "pyarrow>=6.0.1",

@@ -4,7 +4,11 @@ pip install .
 ```
 
 ## Generate Keywords
-Choose from one of the three methods- simple, candidate, guided, embedding
+Choose from one of the four methods that suits best for your requirement- 
+1. simple- General keyword extractor using given BERT model
+2. candidate- Use yake candidate keywords to perform keyword extraction on BERT model
+3. guided- Use seed words to find related keywords
+4. embedding- Uses embeddings of document and words to generate score using cosine similarity
 ```
 import nltk
 nltk.download('stopwords')
@@ -40,6 +44,7 @@ keywords = generate_keywords(doc.lower(), kw_model, keyphrase_ngram_range=(1, 3)
 print("simple method", keywords, sep='\n')
 
 ```
+For example of other algorithms, check main.py file
 
 ## Generate Keyword Plots
 ```
@@ -88,24 +93,6 @@ plot_data(data=df.copy(),
 
 ```
 
-## Topic Modeling
-```
-from text_analysis_models.generate_topic import generateTopic
-doc = """
-      The Table looks better than the pics. 
-      It is very Sturdy. The seller contacted me to ask 
-      my colour preferences for the stool tapestry and
-      what polish I want for my table. He did a fabulous 
-      job and my table looks just the way I wanted it to! 
-      Total value for money. 5 stars to the product, 
-      seller and Amazon
-      """ 
-topic = generateTopic(doc, method='method1')
-```
-Here 'method1' works well enough but the limitation is that keywords like 'very good product' and 
-'good product' are treated separately while they are kind of synonyms so to implement that we have 
-other methods that use clustering methods to group such keywords into one group and then generate topic.
-
 ## Sentiment Generation
 ```
 from text_analysis_models.sentiment_analysis import generate_sentiment
@@ -122,8 +109,28 @@ doc = """
 sentiment = generate_sentiment(doc)
 ```
 
+## Topic Modeling
+Choose from below methods-
+1. method1- uses simple BERT and cosine similarity score to generate topic from top performing keywords. <b>Flaw</b>- has too many similar keywords in the final topic. Example- cute and cute dogs both can be in the topic while only cute dogs is suffice.
+2. method2- uses hdbscan clustering on top of method1. <b>Benefit</b>- topics will be more wide spread and distinct. Hence, will give more idea of topics in the document.
+3. method3- this is good when there are multiple documents and we are looking for uniqueness among them instead of just one document. It generates the important tokens that appear in a particular document frequently but rarely across other documents.
+for more details on implementation check main.py file.
+```
+from text_analysis_models.generate_topic import generateTopic
+doc = """
+      The Table looks better than the pics. 
+      It is very Sturdy. The seller contacted me to ask 
+      my colour preferences for the stool tapestry and
+      what polish I want for my table. He did a fabulous 
+      job and my table looks just the way I wanted it to! 
+      Total value for money. 5 stars to the product, 
+      seller and Amazon
+      """ 
+topic = generateTopic(doc, method='method1')
+```
+TODO: other clustering methods like DBScan can be tried out and utilized as per the usecase
+
 ## References-
 * Quickstart- https://maartengr.github.io/KeyBERT/guides/quickstart.html
 * Pretrained Models- https://www.sbert.net/docs/pretrained_models.html
 * https://huggingface.co/models?pipeline_tag=text-classification&sort=downloads&search=sentiment
-* 

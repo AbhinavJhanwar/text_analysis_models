@@ -51,6 +51,9 @@ def generate_keywords(doc, kw_model, keyphrase_ngram_range=(1, 3), stop_words='e
             (it can also be a single one!) and search for keywords that 
             are similar to both the document and the seeded keywords.
       Method- embedding:
+            This method utilizes BERT model to generate embeddings for 
+            the document and the words, then generates the keywords from
+            those embeddings using cosine similarity and provides a score
             
 
       Args:

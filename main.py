@@ -30,7 +30,7 @@ kw_model = KeyBERT('all-distilroberta-v1')
 
 ################# method 1
 keywords = generate_keywords(doc.lower(), kw_model, keyphrase_ngram_range=(1, 3), stop_words='nltk', method='simple', highlight=True) 
-print("simple method", keywords, sep='\n')
+print("simple method", keywords, sep='\n') 
 
 ################# method 2
 keywords = generate_keywords(doc.lower(), kw_model, keyphrase_ngram_range=(1, 3), stop_words='nltk', method='candidate', highlight=True) 
@@ -55,6 +55,7 @@ print("embedding method", token_score_pairs, sep='\n')
 ##################################################
 from text_analysis_models.plot_keywords import plot_data
 from sentence_transformers import SentenceTransformer
+from text_analysis_models.generate_keywords import generate_keywords
 import pandas as pd
 
 '''# generate token and score
@@ -76,14 +77,13 @@ plot_data(data=df.copy(),
     number_of_keywords_to_plot=20)'''
 
 ############# plot keywords for multiple docs
-from text_analysis_models.generate_keywords import clean_text, generate_keywords
+from text_analysis_models.generate_keywords import clean_text
 from tqdm import tqdm
 kw_model = SentenceTransformer('all-distilroberta-v1')#('all-MiniLM-L6-v2')
 
 # read reviews
 reviews = pd.read_pickle('data/reviews_gift_cards.pkl')
 # clean review text
-
 reviews['clean_reviewText'] = reviews['reviewText'].apply(clean_text)
 
 # generate token and score
@@ -96,7 +96,6 @@ for i, doc in tqdm(enumerate(reviews.clean_reviewText)):
             temp['sentiment'] = sentiment
             df = pd.concat([df, temp])
 
-# %%
 # plot data
 plot_data(data=df.copy(), 
     keyword_column='keyword', 
@@ -135,6 +134,7 @@ print(sentiment)
 ################## topic modeling #######################
 #########################################################
 from text_analysis_models.generate_topic import generateTopic
+import pandas as pd
 doc = """
       The Table looks better than the pics. 
       It is very Sturdy. The seller contacted me to ask 
@@ -144,12 +144,27 @@ doc = """
       Total value for money. 5 stars to the product, 
       seller and Amazon
       """ 
-topic = generateTopic(doc, method='method1')
-print(topic)
+# print('document:', doc)
 
-topic = generateTopic(doc, method='method2')
-print(topic)
+# topic = generateTopic(doc, method='method1', number_of_topics=7)
+# print('method 1:', topic)
 
+# topic = generateTopic(doc, method='method2', clusterer='hdbscan', number_of_topics=7)
+# print('method 2- hdbscan:', topic)
+
+# topic = generateTopic(doc, method='method2', clusterer='kmeans', clusters=10, number_of_topics=7)
+# print('method 2- kmeans:', topic)
+
+reviews = pd.read_pickle('data/reviews_gift_cards.pkl')
+reviews = reviews.drop_duplicates(['reviewText'])
+texts = reviews.reviewText.tolist()
+# topics = generateTopic(texts, method='method3', clusterer='hdbscan', number_of_topics=7)
+# print('method 3- hdbscan:', topics)
+# update k means to generate clusters in a interval of like 10, 20 for a range of 1000
+topics = generateTopic(texts, method='method3', clusterer='kmeans', clusters=250, number_of_topics=7)
+print('method 3- kmeans:', topics)
+
+# %%
 # next steps-
 # 1. clean text like stemming and lemmatization
 # 2. topic modeling with k-means and dbscan
